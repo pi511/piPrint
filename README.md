@@ -4,6 +4,7 @@
 [![.NET 8.0](https://img.shields.io/badge/.NET-8.0%20WPF-512BD4.svg)](https://dotnet.microsoft.com/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Tests: Passing](https://img.shields.io/badge/Tests-7%20Passing-brightgreen.svg)](PiPrint.Tests)
+[![Built with AI](https://img.shields.io/badge/Built%20with-AI%20Assistance-blueviolet.svg)](#-ai-development-notice)
 
 A modern, lightweight, high-performance Windows print preview and page organizer utility (an open-source alternative to **FinePrint**) built on **.NET 8 (WPF)**.
 
@@ -155,6 +156,12 @@ powershell -ExecutionPolicy Bypass -File Scripts\Build-Installer.ps1
 - **100% Offline & Private:** PiPrint does not send any telemetry, analytics, or document contents to the internet.
 - **Local Spooling:** Spool files are processed entirely in memory and stored locally in `%ProgramData%\PiPrint\Spool\`.
 - **Zero Third-Party Drivers:** Uses Windows' built-in Microsoft XPS Document Writer v4 print driver. No kernel-mode drivers or untrusted certificates are installed.
+
+---
+
+## 🤖 AI Development Notice
+
+PiPrint was designed, engineered, and tested with the assistance of AI (**Google DeepMind's Antigravity** agentic coding platform). The architecture, vector rendering pipeline, N-up imposition algorithms, multilingual localization, and packaging toolchains were collaboratively pair-programmed using human guidance, rigorous unit testing, and automated verification.
 
 ---
 
