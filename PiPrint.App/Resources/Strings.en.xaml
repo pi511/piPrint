@@ -1,0 +1,70 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- App Title & Header -->
+    <sys:String x:Key="Str_AppTitle">PiPrint - Print Preview &amp; Page Organizer</sys:String>
+    <sys:String x:Key="Str_AppSubtitle">Print Preview &amp; Page Organizer</sys:String>
+    <sys:String x:Key="Str_OpenDocument">📂 Open Document</sys:String>
+    <sys:String x:Key="Str_LoadSample">📑 Load Sample</sys:String>
+    <sys:String x:Key="Str_ClearAll">🗑️ Clear All</sys:String>
+
+    <!-- Toolbar & Layout Modes -->
+    <sys:String x:Key="Str_LayoutMode">Layout Mode:</sys:String>
+    <sys:String x:Key="Str_Layout1Up">1-Up (Standard)</sys:String>
+    <sys:String x:Key="Str_Layout2Up">2-Up</sys:String>
+    <sys:String x:Key="Str_Layout4Up">4-Up</sys:String>
+    <sys:String x:Key="Str_Layout8Up">8-Up</sys:String>
+    <sys:String x:Key="Str_LayoutBooklet">📖 Booklet</sys:String>
+    <sys:String x:Key="Str_RemoveBlanks">🧹 Remove Blank Pages</sys:String>
+    <sys:String x:Key="Str_Rotate90">↻ Rotate 90°</sys:String>
+    <sys:String x:Key="Str_DeletePage">❌ Delete Page</sys:String>
+
+    <!-- Left Gallery -->
+    <sys:String x:Key="Str_PageOrganizer">Page Organizer</sys:String>
+    <sys:String x:Key="Str_PageNumberPrefix">Page</sys:String>
+    <sys:String x:Key="Str_RotationLabel">Rotation: {0}°</sys:String>
+    <sys:String x:Key="Str_BlankBadge">BLANK</sys:String>
+    <sys:String x:Key="Str_PageMoved">Page moved to position {0}.</sys:String>
+
+    <!-- Center Preview & Empty State -->
+    <sys:String x:Key="Str_PiPrintReady">PiPrint is Ready</sys:String>
+    <sys:String x:Key="Str_EmptyStateInstructions">Print any document from Notepad, Word, Chrome, CAD, or Adobe Reader and select 'PiPrint' as your printer.</sys:String>
+    <sys:String x:Key="Str_LoadSampleReport">📑 Load Sample Report</sys:String>
+    <sys:String x:Key="Str_OpenSpoolDoc">📂 Open Spool Document</sys:String>
+    <sys:String x:Key="Str_PrevSheet">◀ Previous Sheet</sys:String>
+    <sys:String x:Key="Str_NextSheet">Next Sheet ▶</sys:String>
+    <sys:String x:Key="Str_Zoom">Zoom:</sys:String>
+    <sys:String x:Key="Str_Side1">Side 1 (Front)</sys:String>
+    <sys:String x:Key="Str_Side2">Side 2 (Back)</sys:String>
+    <sys:String x:Key="Str_Landscape">Landscape</sys:String>
+    <sys:String x:Key="Str_Portrait">Portrait</sys:String>
+    <sys:String x:Key="Str_BlankPage">[Blank Page]</sys:String>
+
+    <!-- Right Settings Panel -->
+    <sys:String x:Key="Str_TargetPrinter">Target Printer</sys:String>
+    <sys:String x:Key="Str_DuplexSection">Duplex (Double-Sided)</sys:String>
+    <sys:String x:Key="Str_DuplexSimplex">Single-Sided (Simplex)</sys:String>
+    <sys:String x:Key="Str_DuplexHardware">Automatic Duplex (Printer)</sys:String>
+    <sys:String x:Key="Str_DuplexManual">Manual Duplex Helper (2-Pass)</sys:String>
+    <sys:String x:Key="Str_DuplexManualTip">Prints front pages first, prompts to flip paper, then prints back pages</sys:String>
+    <sys:String x:Key="Str_Watermark">Watermark</sys:String>
+    <sys:String x:Key="Str_WmNone">None</sys:String>
+    <sys:String x:Key="Str_WmDraft">DRAFT</sys:String>
+    <sys:String x:Key="Str_WmConfidential">CONFIDENTIAL</sys:String>
+    <sys:String x:Key="Str_WmCopy">COPY</sys:String>
+    <sys:String x:Key="Str_WmCustom">Custom Text</sys:String>
+    <sys:String x:Key="Str_Economy">Ink &amp; Toner Economy</sys:String>
+    <sys:String x:Key="Str_ForceGrayscale">Force Grayscale / Black &amp; White</sys:String>
+    <sys:String x:Key="Str_GrayscaleTip">Saves expensive color ink/toner by converting to monochrome</sys:String>
+    <sys:String x:Key="Str_Copies">Copies:</sys:String>
+    <sys:String x:Key="Str_PrintNow">🖨️  Print Now</sys:String>
+    <sys:String x:Key="Str_SavePdf">📄 Save as PDF</sys:String>
+    <sys:String x:Key="Str_SaveXps">💾 Save as XPS</sys:String>
+
+    <!-- Status Bar & Language -->
+    <sys:String x:Key="Str_Language">Language</sys:String>
+    <sys:String x:Key="Str_WatcherActive">PiPrint Spool Watcher Active</sys:String>
+    <sys:String x:Key="Str_StatusReady">PiPrint is ready. Waiting for print jobs...</sys:String>
+
+</ResourceDictionary>

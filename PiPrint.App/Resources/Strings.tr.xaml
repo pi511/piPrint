@@ -1,0 +1,70 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- App Title & Header -->
+    <sys:String x:Key="Str_AppTitle">PiPrint - Yazdırma Önizleme ve Sayfa Düzenleyici</sys:String>
+    <sys:String x:Key="Str_AppSubtitle">Yazdırma Önizleme ve Sayfa Düzenleyici</sys:String>
+    <sys:String x:Key="Str_OpenDocument">📂 Belge Aç</sys:String>
+    <sys:String x:Key="Str_LoadSample">📑 Örnek Yükle</sys:String>
+    <sys:String x:Key="Str_ClearAll">🗑️ Tümünü Temizle</sys:String>
+
+    <!-- Toolbar & Layout Modes -->
+    <sys:String x:Key="Str_LayoutMode">Sayfa Düzeni:</sys:String>
+    <sys:String x:Key="Str_Layout1Up">1-Sayfa (Standart)</sys:String>
+    <sys:String x:Key="Str_Layout2Up">2-Sayfa</sys:String>
+    <sys:String x:Key="Str_Layout4Up">4-Sayfa</sys:String>
+    <sys:String x:Key="Str_Layout8Up">8-Sayfa</sys:String>
+    <sys:String x:Key="Str_LayoutBooklet">📖 Kitapçık</sys:String>
+    <sys:String x:Key="Str_RemoveBlanks">🧹 Boş Sayfaları Sil</sys:String>
+    <sys:String x:Key="Str_Rotate90">↻ 90° Döndür</sys:String>
+    <sys:String x:Key="Str_DeletePage">❌ Sayfayı Sil</sys:String>
+
+    <!-- Left Gallery -->
+    <sys:String x:Key="Str_PageOrganizer">Sayfa Düzenleyici</sys:String>
+    <sys:String x:Key="Str_PageNumberPrefix">Sayfa</sys:String>
+    <sys:String x:Key="Str_RotationLabel">Döndürme: {0}°</sys:String>
+    <sys:String x:Key="Str_BlankBadge">BOŞ</sys:String>
+    <sys:String x:Key="Str_PageMoved">Sayfa {0}. sıraya taşındı.</sys:String>
+
+    <!-- Center Preview & Empty State -->
+    <sys:String x:Key="Str_PiPrintReady">PiPrint Hazır</sys:String>
+    <sys:String x:Key="Str_EmptyStateInstructions">Notepad, Word, Chrome, CAD veya Adobe Reader'dan yazdırırken yazıcı olarak 'PiPrint'i seçin.</sys:String>
+    <sys:String x:Key="Str_LoadSampleReport">📑 Örnek Rapor Yükle</sys:String>
+    <sys:String x:Key="Str_OpenSpoolDoc">📂 Yazdırma Belgesi Aç</sys:String>
+    <sys:String x:Key="Str_PrevSheet">◀ Önceki Yaprak</sys:String>
+    <sys:String x:Key="Str_NextSheet">Sonraki Yaprak ▶</sys:String>
+    <sys:String x:Key="Str_Zoom">Yakınlaştır:</sys:String>
+    <sys:String x:Key="Str_Side1">Yüz 1 (Ön)</sys:String>
+    <sys:String x:Key="Str_Side2">Yüz 2 (Arka)</sys:String>
+    <sys:String x:Key="Str_Landscape">Yatay</sys:String>
+    <sys:String x:Key="Str_Portrait">Dikey</sys:String>
+    <sys:String x:Key="Str_BlankPage">[Boş Sayfa]</sys:String>
+
+    <!-- Right Settings Panel -->
+    <sys:String x:Key="Str_TargetPrinter">Hedef Yazıcı</sys:String>
+    <sys:String x:Key="Str_DuplexSection">Çift Taraflı (Dupleks)</sys:String>
+    <sys:String x:Key="Str_DuplexSimplex">Tek Taraflı</sys:String>
+    <sys:String x:Key="Str_DuplexHardware">Otomatik Çift Taraflı (Yazıcı)</sys:String>
+    <sys:String x:Key="Str_DuplexManual">Manuel Çift Taraflı Yardımcısı</sys:String>
+    <sys:String x:Key="Str_DuplexManualTip">Önce ön yüzleri basar, kağıdı çevirmenizi ister, sonra arka yüzleri basar</sys:String>
+    <sys:String x:Key="Str_Watermark">Filigran</sys:String>
+    <sys:String x:Key="Str_WmNone">Yok</sys:String>
+    <sys:String x:Key="Str_WmDraft">TASLAK</sys:String>
+    <sys:String x:Key="Str_WmConfidential">GİZLİ</sys:String>
+    <sys:String x:Key="Str_WmCopy">KOPYA</sys:String>
+    <sys:String x:Key="Str_WmCustom">Özel Metin</sys:String>
+    <sys:String x:Key="Str_Economy">Mürekkep ve Toner Tasarrufu</sys:String>
+    <sys:String x:Key="Str_ForceGrayscale">Gri Tonlama / Siyah-Beyaz</sys:String>
+    <sys:String x:Key="Str_GrayscaleTip">Renkli mürekkep/toner tüketimini önleyerek tasarruf sağlar</sys:String>
+    <sys:String x:Key="Str_Copies">Kopya Sayısı:</sys:String>
+    <sys:String x:Key="Str_PrintNow">🖨️  Şimdi Yazdır</sys:String>
+    <sys:String x:Key="Str_SavePdf">📄 PDF Olarak Kaydet</sys:String>
+    <sys:String x:Key="Str_SaveXps">💾 XPS Olarak Kaydet</sys:String>
+
+    <!-- Status Bar & Language -->
+    <sys:String x:Key="Str_Language">Dil</sys:String>
+    <sys:String x:Key="Str_WatcherActive">PiPrint Yazdırma İzleyicisi Etkin</sys:String>
+    <sys:String x:Key="Str_StatusReady">PiPrint hazır. Yazdırma işleri bekleniyor...</sys:String>
+
+</ResourceDictionary>

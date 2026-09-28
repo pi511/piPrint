@@ -1,0 +1,70 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- App Title & Header -->
+    <sys:String x:Key="Str_AppTitle">PiPrint - Druckvorschau &amp; Seitenorganisator</sys:String>
+    <sys:String x:Key="Str_AppSubtitle">Druckvorschau &amp; Seitenorganisator</sys:String>
+    <sys:String x:Key="Str_OpenDocument">📂 Dokument öffnen</sys:String>
+    <sys:String x:Key="Str_LoadSample">📑 Muster laden</sys:String>
+    <sys:String x:Key="Str_ClearAll">🗑️ Alles löschen</sys:String>
+
+    <!-- Toolbar & Layout Modes -->
+    <sys:String x:Key="Str_LayoutMode">Seitenlayout:</sys:String>
+    <sys:String x:Key="Str_Layout1Up">1-Seite (Standard)</sys:String>
+    <sys:String x:Key="Str_Layout2Up">2-Seiten</sys:String>
+    <sys:String x:Key="Str_Layout4Up">4-Seiten</sys:String>
+    <sys:String x:Key="Str_Layout8Up">8-Seiten</sys:String>
+    <sys:String x:Key="Str_LayoutBooklet">📖 Broschüre</sys:String>
+    <sys:String x:Key="Str_RemoveBlanks">🧹 Leere Seiten löschen</sys:String>
+    <sys:String x:Key="Str_Rotate90">↻ 90° drehen</sys:String>
+    <sys:String x:Key="Str_DeletePage">❌ Seite löschen</sys:String>
+
+    <!-- Left Gallery -->
+    <sys:String x:Key="Str_PageOrganizer">Seitenorganisator</sys:String>
+    <sys:String x:Key="Str_PageNumberPrefix">Seite</sys:String>
+    <sys:String x:Key="Str_RotationLabel">Drehung: {0}°</sys:String>
+    <sys:String x:Key="Str_BlankBadge">LEER</sys:String>
+    <sys:String x:Key="Str_PageMoved">Seite an Position {0} verschoben.</sys:String>
+
+    <!-- Center Preview & Empty State -->
+    <sys:String x:Key="Str_PiPrintReady">PiPrint ist bereit</sys:String>
+    <sys:String x:Key="Str_EmptyStateInstructions">Drucken Sie aus Word, Chrome, Notepad oder Adobe Reader und wählen Sie 'PiPrint' als Drucker aus.</sys:String>
+    <sys:String x:Key="Str_LoadSampleReport">📑 Musterbericht laden</sys:String>
+    <sys:String x:Key="Str_OpenSpoolDoc">📂 Druckdatei öffnen</sys:String>
+    <sys:String x:Key="Str_PrevSheet">◀ Vorheriges Blatt</sys:String>
+    <sys:String x:Key="Str_NextSheet">Nächstes Blatt ▶</sys:String>
+    <sys:String x:Key="Str_Zoom">Zoom:</sys:String>
+    <sys:String x:Key="Str_Side1">Seite 1 (Vorderseite)</sys:String>
+    <sys:String x:Key="Str_Side2">Seite 2 (Rückseite)</sys:String>
+    <sys:String x:Key="Str_Landscape">Querformat</sys:String>
+    <sys:String x:Key="Str_Portrait">Hochformat</sys:String>
+    <sys:String x:Key="Str_BlankPage">[Leere Seite]</sys:String>
+
+    <!-- Right Settings Panel -->
+    <sys:String x:Key="Str_TargetPrinter">Zieldrucker</sys:String>
+    <sys:String x:Key="Str_DuplexSection">Beidseitig (Duplex)</sys:String>
+    <sys:String x:Key="Str_DuplexSimplex">Einseitig (Simplex)</sys:String>
+    <sys:String x:Key="Str_DuplexHardware">Automatischer Duplex (Drucker)</sys:String>
+    <sys:String x:Key="Str_DuplexManual">Manueller Duplex-Assistent</sys:String>
+    <sys:String x:Key="Str_DuplexManualTip">Druckt zuerst die Vorderseiten, fordert zum Wenden des Papiers auf und druckt dann die Rückseiten</sys:String>
+    <sys:String x:Key="Str_Watermark">Wasserzeichen</sys:String>
+    <sys:String x:Key="Str_WmNone">Keines</sys:String>
+    <sys:String x:Key="Str_WmDraft">ENTWURF</sys:String>
+    <sys:String x:Key="Str_WmConfidential">VERTRAULICH</sys:String>
+    <sys:String x:Key="Str_WmCopy">KOPIE</sys:String>
+    <sys:String x:Key="Str_WmCustom">Benutzerdefinierter Text</sys:String>
+    <sys:String x:Key="Str_Economy">Tinte- &amp; Tonersparmodus</sys:String>
+    <sys:String x:Key="Str_ForceGrayscale">In Graustufen / Schwarzweiß umwandeln</sys:String>
+    <sys:String x:Key="Str_GrayscaleTip">Spart teure Farbpatronen durch Umwandlung in Monochrom</sys:String>
+    <sys:String x:Key="Str_Copies">Kopien:</sys:String>
+    <sys:String x:Key="Str_PrintNow">🖨️  Jetzt drucken</sys:String>
+    <sys:String x:Key="Str_SavePdf">📄 Als PDF speichern</sys:String>
+    <sys:String x:Key="Str_SaveXps">💾 Als XPS speichern</sys:String>
+
+    <!-- Status Bar & Language -->
+    <sys:String x:Key="Str_Language">Sprache</sys:String>
+    <sys:String x:Key="Str_WatcherActive">PiPrint Spool-Dienst aktiv</sys:String>
+    <sys:String x:Key="Str_StatusReady">PiPrint ist bereit. Warte auf Druckaufträge...</sys:String>
+
+</ResourceDictionary>

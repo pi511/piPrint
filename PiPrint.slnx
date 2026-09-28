@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="PiPrint.App/PiPrint.App.csproj" />
+  <Project Path="PiPrint.Tests/PiPrint.Tests.csproj" />
+</Solution>

@@ -1,0 +1,58 @@
+## Build & Output Directories
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Xx]64/
+[Xx]86/
+build/
+dist/
+
+## Visual Studio & IDEs
+.vs/
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+*.ide
+*.cache
+*.userprefs
+*.pidb
+*.suo
+
+## Visual Studio Code & Rider
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+
+## Test & Coverage Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.visualstudio.xunit.runsettings
+
+## Logs, Dumps & Temp Files
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.patch
+*~
+
+## Inno Setup & Packaging Outputs
+Output/
+_is_tmp/
+
+## Test Renders & Generated Screenshots
+*.png
+!PiPrint.App/**/*.png
+!PiPrint.App/**/*.ico
+
+## OS Generated Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
