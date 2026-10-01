@@ -331,17 +331,17 @@ public class MainViewModel : INotifyPropertyChanged
     {
         try
         {
+            if (!append)
+            {
+                Pages.Clear();
+                _xpsService.ClearActivePackages();
+            }
+
             var loaded = _xpsService.LoadFromXpsFile(filePath);
             if (loaded.Count == 0)
             {
                 MessageBox.Show("No printable pages found in this file.", "PiPrint", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
-            }
-
-            if (!append)
-            {
-                Pages.Clear();
-                _xpsService.ClearActivePackages();
             }
 
             foreach (var p in loaded)
@@ -367,9 +367,6 @@ public class MainViewModel : INotifyPropertyChanged
         {
             try
             {
-                var loaded = _xpsService.LoadFromXpsBytes(bytes, jobName);
-                if (loaded.Count == 0) return;
-
                 // Append if we already have a document open, or set as new
                 bool append = Pages.Count > 0;
                 if (!append)
@@ -377,6 +374,9 @@ public class MainViewModel : INotifyPropertyChanged
                     Pages.Clear();
                     _xpsService.ClearActivePackages();
                 }
+
+                var loaded = _xpsService.LoadFromXpsBytes(bytes, jobName);
+                if (loaded.Count == 0) return;
 
                 foreach (var p in loaded)
                 {
@@ -622,6 +622,13 @@ public class MainViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
+            try
+            {
+                var dir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "PiPrint");
+                System.IO.Directory.CreateDirectory(dir);
+                System.IO.File.AppendAllText(System.IO.Path.Combine(dir, "error.log"), $"[{DateTime.Now}] Print Error: {ex}\n\n");
+            }
+            catch { }
             MessageBox.Show($"Error sending print job: {ex.Message}", "Print Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
@@ -704,6 +711,13 @@ public class MainViewModel : INotifyPropertyChanged
         catch (Exception ex)
         {
             StatusMessage = "Error saving PDF.";
+            try
+            {
+                var dir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "PiPrint");
+                System.IO.Directory.CreateDirectory(dir);
+                System.IO.File.AppendAllText(System.IO.Path.Combine(dir, "error.log"), $"[{DateTime.Now}] PDF Export Error: {ex}\n\n");
+            }
+            catch { }
             MessageBox.Show($"Failed to save PDF: {ex.Message}", "PDF Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }

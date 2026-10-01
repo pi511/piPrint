@@ -9,6 +9,12 @@
     <ApplicationTitle>PiPrint</ApplicationTitle>
     <AssemblyName>PiPrint</AssemblyName>
     <RootNamespace>PiPrint.App</RootNamespace>
+    <ApplicationIcon>Resources\PiPrint.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\PiPrint.ico" />
+    <Resource Include="Resources\PiPrint.png" />
+  </ItemGroup>
 
 </Project>

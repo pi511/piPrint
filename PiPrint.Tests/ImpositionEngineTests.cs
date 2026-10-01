@@ -126,27 +126,44 @@ public class ImpositionEngineTests
         {
             try
             {
-                var service = new XpsDocumentService();
-                var lastFile = files[^1];
-                var pages = service.LoadFromXpsFile(lastFile);
-                Assert.NotEmpty(pages);
-
-                var engine = new ImpositionEngine();
-                var sheets = engine.ComputeSheets(pages, LayoutMode.OneUp);
-                var compDoc = service.BuildComposedDocument(sheets);
-
-                var tempFile = System.IO.Path.GetTempFileName() + ".xps";
-                try
+                var pm = new PrinterManager();
+                foreach (var file in files)
                 {
-                    var pm = new PrinterManager();
-                    pm.SaveAsXps(compDoc, tempFile);
-                    Assert.True(System.IO.File.Exists(tempFile));
-                    Console.WriteLine("SUCCESS! Saved file length: " + new System.IO.FileInfo(tempFile).Length);
-                }
-                finally
-                {
+                    Console.WriteLine($"Testing file: {System.IO.Path.GetFileName(file)}");
+                    var service = new XpsDocumentService();
+                    List<PageItem> pages;
+                    try
+                    {
+                        pages = service.LoadFromXpsFile(file);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Skip unreadable file: {ex.Message}");
+                        continue;
+                    }
+                    if (pages.Count == 0) continue;
+
+                    var engine = new ImpositionEngine();
+                    foreach (var mode in new[] { LayoutMode.OneUp, LayoutMode.TwoUp, LayoutMode.FourUp, LayoutMode.Booklet })
+                    {
+                        var sheets = engine.ComputeSheets(pages, mode);
+                        var compDoc = service.BuildComposedDocument(sheets, WatermarkType.Draft, "DRAFT", false);
+
+                        var tempFile = System.IO.Path.GetTempFileName() + ".xps";
+                        try
+                        {
+                            pm.SaveAsXps(compDoc, tempFile);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception($"Failed on file {System.IO.Path.GetFileName(file)} with mode {mode}: {ex}", ex);
+                        }
+                        finally
+                        {
+                            if (System.IO.File.Exists(tempFile)) System.IO.File.Delete(tempFile);
+                        }
+                    }
                     service.ClearActivePackages();
-                    if (System.IO.File.Exists(tempFile)) System.IO.File.Delete(tempFile);
                 }
             }
             catch (Exception ex)
@@ -164,6 +181,56 @@ public class ImpositionEngineTests
             Console.WriteLine("FULL EXCEPTION:\n" + threadEx.ToString());
             throw new Exception("Reproduction: " + threadEx.ToString(), threadEx);
         }
+    }
+
+    [Fact]
+    public void TestPackageRetentionPreventsNotImplementedException()
+    {
+        var archiveDir = @"C:\ProgramData\PiPrint\Spool\Archive";
+        if (!System.IO.Directory.Exists(archiveDir)) return;
+
+        var files = System.IO.Directory.GetFiles(archiveDir, "*.xps");
+        if (files.Length == 0) return;
+
+        Exception? threadEx = null;
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                var service = new XpsDocumentService();
+                var pages = service.LoadFromXpsFile(files[^1]);
+                Assert.NotEmpty(pages);
+
+                var engine = new ImpositionEngine();
+                var sheets = engine.ComputeSheets(pages, LayoutMode.OneUp);
+                var doc = service.BuildComposedDocument(sheets);
+
+                var pm = new PrinterManager();
+                var tempXps = System.IO.Path.GetTempFileName() + ".xps";
+                try
+                {
+                    // With active packages retained, SaveAsXps MUST succeed!
+                    pm.SaveAsXps(doc, tempXps);
+                    Assert.True(System.IO.File.Exists(tempXps));
+                    Assert.True(new System.IO.FileInfo(tempXps).Length > 0);
+                }
+                finally
+                {
+                    if (System.IO.File.Exists(tempXps)) System.IO.File.Delete(tempXps);
+                    service.ClearActivePackages();
+                }
+            }
+            catch (Exception ex)
+            {
+                threadEx = ex;
+            }
+        });
+
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+
+        if (threadEx != null) throw threadEx;
     }
 
     [Fact]

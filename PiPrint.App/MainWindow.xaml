@@ -8,6 +8,7 @@
         xmlns:models="clr-namespace:PiPrint.App.Models"
         mc:Ignorable="d"
         Title="{DynamicResource Str_AppTitle}" 
+        Icon="Resources/PiPrint.ico"
         Height="820" Width="1280"
         MinHeight="650" MinWidth="950"
         WindowStartupLocation="CenterScreen"

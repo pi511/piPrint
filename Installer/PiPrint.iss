@@ -28,6 +28,7 @@ SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=admin
 ArchitecturesInstallIn64BitMode=x64compatible
+SetupIconFile=..\PiPrint.App\Resources\PiPrint.ico
 UninstallDisplayIcon={app}\app\{#MyAppExeName}
 CloseApplications=yes
 RestartApplications=no
