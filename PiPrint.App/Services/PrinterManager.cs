@@ -112,4 +112,97 @@ public class PrinterManager
         var writer = XpsDocument.CreateXpsDocumentWriter(xpsDoc);
         writer.Write(doc.DocumentPaginator);
     }
+
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential, CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private struct DOCINFOW
+    {
+        [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPWStr)] public string pDocName;
+        [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPWStr)] public string pOutputFile;
+        [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPWStr)] public string pDataType;
+    }
+
+    [System.Runtime.InteropServices.DllImport("winspool.drv", EntryPoint = "OpenPrinterW", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern bool OpenPrinter(string pPrinterName, out IntPtr phPrinter, IntPtr pDefault);
+
+    [System.Runtime.InteropServices.DllImport("winspool.drv", EntryPoint = "ClosePrinter", SetLastError = true)]
+    private static extern bool ClosePrinter(IntPtr hPrinter);
+
+    [System.Runtime.InteropServices.DllImport("winspool.drv", EntryPoint = "StartDocPrinterW", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern int StartDocPrinter(IntPtr hPrinter, int level, ref DOCINFOW pDocInfo);
+
+    [System.Runtime.InteropServices.DllImport("winspool.drv", EntryPoint = "EndDocPrinter", SetLastError = true)]
+    private static extern bool EndDocPrinter(IntPtr hPrinter);
+
+    [System.Runtime.InteropServices.DllImport("winspool.drv", EntryPoint = "StartPagePrinter", SetLastError = true)]
+    private static extern bool StartPagePrinter(IntPtr hPrinter);
+
+    [System.Runtime.InteropServices.DllImport("winspool.drv", EntryPoint = "EndPagePrinter", SetLastError = true)]
+    private static extern bool EndPagePrinter(IntPtr hPrinter);
+
+    [System.Runtime.InteropServices.DllImport("winspool.drv", EntryPoint = "WritePrinter", SetLastError = true)]
+    private static extern bool WritePrinter(IntPtr hPrinter, IntPtr pBuf, int cdBuf, out int pcWritten);
+
+    public bool PrintXpsFileToPdf(string xpsFilePath, string pdfFilePath, string printerName = "Microsoft Print to PDF")
+    {
+        if (!File.Exists(xpsFilePath)) return false;
+
+        if (File.Exists(pdfFilePath))
+        {
+            try { File.Delete(pdfFilePath); } catch { }
+        }
+
+        IntPtr hPrinter = IntPtr.Zero;
+        try
+        {
+            if (!OpenPrinter(printerName, out hPrinter, IntPtr.Zero))
+            {
+                return false;
+            }
+
+            var di = new DOCINFOW
+            {
+                pDocName = Path.GetFileNameWithoutExtension(pdfFilePath),
+                pOutputFile = pdfFilePath,
+                pDataType = "RAW"
+            };
+
+            int docId = StartDocPrinter(hPrinter, 1, ref di);
+            if (docId <= 0)
+            {
+                return false;
+            }
+
+            if (!StartPagePrinter(hPrinter))
+            {
+                EndDocPrinter(hPrinter);
+                return false;
+            }
+
+            byte[] bytes = File.ReadAllBytes(xpsFilePath);
+            IntPtr pUnmanagedBytes = System.Runtime.InteropServices.Marshal.AllocCoTaskMem(bytes.Length);
+            try
+            {
+                System.Runtime.InteropServices.Marshal.Copy(bytes, 0, pUnmanagedBytes, bytes.Length);
+                bool writeSuccess = WritePrinter(hPrinter, pUnmanagedBytes, bytes.Length, out int written);
+                EndPagePrinter(hPrinter);
+                EndDocPrinter(hPrinter);
+                return writeSuccess && written == bytes.Length;
+            }
+            finally
+            {
+                System.Runtime.InteropServices.Marshal.FreeCoTaskMem(pUnmanagedBytes);
+            }
+        }
+        catch
+        {
+            return false;
+        }
+        finally
+        {
+            if (hPrinter != IntPtr.Zero)
+            {
+                ClosePrinter(hPrinter);
+            }
+        }
+    }
 }

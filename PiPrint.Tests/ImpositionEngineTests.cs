@@ -59,6 +59,60 @@ public class ImpositionEngineTests
     }
 
     [Fact]
+    public void TestSaveAsPdfQueue()
+    {
+        Exception? threadEx = null;
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                var service = new XpsDocumentService();
+                var pages = service.GenerateSampleDocument();
+                var engine = new ImpositionEngine();
+                var sheets = engine.ComputeSheets(pages, LayoutMode.OneUp);
+                var doc = service.BuildComposedDocument(sheets);
+
+                var tempXps = System.IO.Path.GetTempFileName() + ".xps";
+                var tempPdf = System.IO.Path.GetTempFileName() + ".pdf";
+
+                try
+                {
+                    var pm = new PrinterManager();
+                    pm.SaveAsXps(doc, tempXps);
+                    Assert.True(System.IO.File.Exists(tempXps));
+
+                    // Test printing directly to PDF file via winspool
+                    bool converted = pm.PrintXpsFileToPdf(tempXps, tempPdf);
+                    Console.WriteLine("Converted via Win32: " + converted);
+                    if (converted)
+                    {
+                        Assert.True(System.IO.File.Exists(tempPdf));
+                        var bytes = System.IO.File.ReadAllBytes(tempPdf);
+                        Assert.True(bytes.Length > 0);
+                        var header = System.Text.Encoding.ASCII.GetString(bytes, 0, Math.Min(bytes.Length, 5));
+                        Console.WriteLine("PDF Header: " + header + ", Size: " + bytes.Length);
+                        Assert.Equal("%PDF-", header);
+                    }
+                }
+                finally
+                {
+                    if (System.IO.File.Exists(tempXps)) System.IO.File.Delete(tempXps);
+                    if (System.IO.File.Exists(tempPdf)) System.IO.File.Delete(tempPdf);
+                }
+            }
+            catch (Exception ex)
+            {
+                threadEx = ex;
+            }
+        });
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+
+        if (threadEx != null) throw threadEx;
+    }
+
+    [Fact]
     public void TestPrintComposedDocumentFromArchivedXps()
     {
         var archiveDir = @"C:\ProgramData\PiPrint\Spool\Archive";

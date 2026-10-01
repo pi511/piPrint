@@ -657,16 +657,54 @@ public class MainViewModel : INotifyPropertyChanged
     {
         if (Sheets.Count == 0) return;
 
-        var pdfPrinter = InstalledPrinters.FirstOrDefault(p => p.Name.Contains("PDF", StringComparison.OrdinalIgnoreCase));
-        if (pdfPrinter != null)
+        var sfd = new SaveFileDialog
         {
+            Title = "Save As PDF",
+            Filter = "PDF Document (*.pdf)|*.pdf",
+            FileName = "PiPrint_Document.pdf"
+        };
+
+        if (sfd.ShowDialog() != true) return;
+
+        string targetPath = sfd.FileName;
+        StatusMessage = "Exporting to PDF...";
+
+        try
+        {
+            var pdfPrinter = InstalledPrinters.FirstOrDefault(p => p.Name.Contains("PDF", StringComparison.OrdinalIgnoreCase));
+            string printerName = pdfPrinter?.Name ?? "Microsoft Print to PDF";
+
             var composedDoc = _xpsService.BuildComposedDocument(Sheets.ToList(), CurrentWatermark, CustomWatermarkText, IsGrayscale);
-            _printerManager.PrintDocument(composedDoc, pdfPrinter.Name, 1, DuplexMode.Simplex);
-            StatusMessage = "Exporting to PDF via Microsoft Print to PDF...";
+            var tempXps = Path.GetTempFileName() + ".xps";
+
+            try
+            {
+                _printerManager.SaveAsXps(composedDoc, tempXps);
+
+                bool success = _printerManager.PrintXpsFileToPdf(tempXps, targetPath, printerName);
+                if (success && File.Exists(targetPath) && new FileInfo(targetPath).Length > 0)
+                {
+                    StatusMessage = $"PDF saved successfully to {Path.GetFileName(targetPath)}.";
+                    MessageBox.Show($"PDF saved successfully to:\n{targetPath}", "PiPrint", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Could not generate PDF directly via the Windows PDF driver. You can also save as XPS.", "PDF Export", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    StatusMessage = "PDF export failed.";
+                }
+            }
+            finally
+            {
+                if (File.Exists(tempXps))
+                {
+                    try { File.Delete(tempXps); } catch { }
+                }
+            }
         }
-        else
+        catch (Exception ex)
         {
-            SaveAsXps();
+            StatusMessage = "Error saving PDF.";
+            MessageBox.Show($"Failed to save PDF: {ex.Message}", "PDF Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -683,10 +721,18 @@ public class MainViewModel : INotifyPropertyChanged
 
         if (sfd.ShowDialog() == true)
         {
-            var composedDoc = _xpsService.BuildComposedDocument(Sheets.ToList(), CurrentWatermark, CustomWatermarkText, IsGrayscale);
-            _printerManager.SaveAsXps(composedDoc, sfd.FileName);
-            StatusMessage = $"Saved to {sfd.FileName}.";
-            MessageBox.Show("Saved successfully!", "PiPrint", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                var composedDoc = _xpsService.BuildComposedDocument(Sheets.ToList(), CurrentWatermark, CustomWatermarkText, IsGrayscale);
+                _printerManager.SaveAsXps(composedDoc, sfd.FileName);
+                StatusMessage = $"Saved to {sfd.FileName}.";
+                MessageBox.Show("Saved successfully!", "PiPrint", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = "Error saving XPS.";
+                MessageBox.Show($"Failed to save XPS: {ex.Message}", "XPS Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 
