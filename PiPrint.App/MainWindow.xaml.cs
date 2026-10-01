@@ -51,6 +51,13 @@ public partial class MainWindow : Window
     [DllImport("user32.dll")]
     private static extern IntPtr LoadIcon(IntPtr hInstance, IntPtr lpIconName);
 
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    private static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+
+    private const int WM_GETICON = 0x007F;
+    private const int ICON_SMALL = 0;
+    private const int ICON_BIG = 1;
+
     private bool _isExplicitExit;
     private HwndSource? _hwndSource;
     private ContextMenu? _trayMenu;
@@ -79,6 +86,16 @@ public partial class MainWindow : Window
         _hwndSource = HwndSource.FromHwnd(helper.Handle);
         _hwndSource?.AddHook(WndProc);
 
+        IntPtr hIcon = SendMessage(helper.Handle, WM_GETICON, (IntPtr)ICON_SMALL, IntPtr.Zero);
+        if (hIcon == IntPtr.Zero)
+        {
+            hIcon = SendMessage(helper.Handle, WM_GETICON, (IntPtr)ICON_BIG, IntPtr.Zero);
+        }
+        if (hIcon == IntPtr.Zero)
+        {
+            hIcon = LoadIcon(IntPtr.Zero, (IntPtr)IDI_APPLICATION);
+        }
+
         var nid = new NOTIFYICONDATA
         {
             cbSize = Marshal.SizeOf(typeof(NOTIFYICONDATA)),
@@ -86,7 +103,7 @@ public partial class MainWindow : Window
             uID = 1001,
             uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP,
             uCallbackMessage = WM_TRAYICON,
-            hIcon = LoadIcon(IntPtr.Zero, (IntPtr)IDI_APPLICATION),
+            hIcon = hIcon,
             szTip = "PiPrint - Print Preview & Page Organizer"
         };
         Shell_NotifyIcon(NIM_ADD, ref nid);
