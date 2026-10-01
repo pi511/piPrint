@@ -338,7 +338,11 @@ public class MainViewModel : INotifyPropertyChanged
                 return;
             }
 
-            if (!append) Pages.Clear();
+            if (!append)
+            {
+                Pages.Clear();
+                _xpsService.ClearActivePackages();
+            }
 
             foreach (var p in loaded)
             {
@@ -368,7 +372,11 @@ public class MainViewModel : INotifyPropertyChanged
 
                 // Append if we already have a document open, or set as new
                 bool append = Pages.Count > 0;
-                if (!append) Pages.Clear();
+                if (!append)
+                {
+                    Pages.Clear();
+                    _xpsService.ClearActivePackages();
+                }
 
                 foreach (var p in loaded)
                 {
@@ -528,6 +536,7 @@ public class MainViewModel : INotifyPropertyChanged
         if (MessageBox.Show("Clear all pages from the current session?", "PiPrint - Clear Session", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
         {
             Pages.Clear();
+            _xpsService.ClearActivePackages();
             Sheets.Clear();
             CurrentSheet = null;
             SelectedPage = null;

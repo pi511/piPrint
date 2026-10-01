@@ -59,6 +59,60 @@ public class ImpositionEngineTests
     }
 
     [Fact]
+    public void TestPrintComposedDocumentFromArchivedXps()
+    {
+        var archiveDir = @"C:\ProgramData\PiPrint\Spool\Archive";
+        if (!System.IO.Directory.Exists(archiveDir)) return;
+
+        var files = System.IO.Directory.GetFiles(archiveDir, "*.xps");
+        if (files.Length == 0) return;
+
+        Exception? threadEx = null;
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                var service = new XpsDocumentService();
+                var lastFile = files[^1];
+                var pages = service.LoadFromXpsFile(lastFile);
+                Assert.NotEmpty(pages);
+
+                var engine = new ImpositionEngine();
+                var sheets = engine.ComputeSheets(pages, LayoutMode.OneUp);
+                var compDoc = service.BuildComposedDocument(sheets);
+
+                var tempFile = System.IO.Path.GetTempFileName() + ".xps";
+                try
+                {
+                    var pm = new PrinterManager();
+                    pm.SaveAsXps(compDoc, tempFile);
+                    Assert.True(System.IO.File.Exists(tempFile));
+                    Console.WriteLine("SUCCESS! Saved file length: " + new System.IO.FileInfo(tempFile).Length);
+                }
+                finally
+                {
+                    service.ClearActivePackages();
+                    if (System.IO.File.Exists(tempFile)) System.IO.File.Delete(tempFile);
+                }
+            }
+            catch (Exception ex)
+            {
+                threadEx = ex;
+            }
+        });
+
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+
+        if (threadEx != null)
+        {
+            Console.WriteLine("FULL EXCEPTION:\n" + threadEx.ToString());
+            throw new Exception("Reproduction: " + threadEx.ToString(), threadEx);
+        }
+    }
+
+    [Fact]
     public void OneUp_GeneratesCorrectSheetCount()
     {
         var pages = CreatePages(5);

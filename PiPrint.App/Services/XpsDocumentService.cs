@@ -34,6 +34,23 @@ public class XpsDocumentService
         return LoadFromXpsBytes(bytes, jobName);
     }
 
+    private readonly List<(Uri PackUri, Package Package, MemoryStream Stream)> _activePackages = new();
+    private readonly object _lock = new();
+
+    public void ClearActivePackages()
+    {
+        lock (_lock)
+        {
+            foreach (var item in _activePackages)
+            {
+                try { PackageStore.RemovePackage(item.PackUri); } catch { }
+                try { item.Package.Close(); } catch { }
+                try { item.Stream.Dispose(); } catch { }
+            }
+            _activePackages.Clear();
+        }
+    }
+
     public List<PageItem> LoadFromXpsBytes(byte[] bytes, string jobName = "Print Job")
     {
         var result = new List<PageItem>();
@@ -42,15 +59,21 @@ public class XpsDocumentService
         // Auto-convert OpenXPS (OXPS) to MSXPS so WPF natively renders it
         bytes = EnsureMsXpsCompatibility(bytes);
 
-        using var memoryStream = new MemoryStream(bytes);
-        using var package = Package.Open(memoryStream, FileMode.Open, FileAccess.Read);
+        var memoryStream = new MemoryStream(bytes);
+        var package = Package.Open(memoryStream, FileMode.Open, FileAccess.Read);
 
-        var uri = new Uri($"memorystream://piprint_{Guid.NewGuid():N}.xps");
-        PackageStore.AddPackage(uri, package);
+        var packageUri = new Uri("http://piprint/" + Guid.NewGuid().ToString("N") + ".xps");
+        var packUri = PackUriHelper.Create(packageUri);
+        PackageStore.AddPackage(packUri, package);
+
+        lock (_lock)
+        {
+            _activePackages.Add((packUri, package, memoryStream));
+        }
 
         try
         {
-            var xpsDoc = new XpsDocument(package, CompressionOption.Normal, uri.AbsoluteUri);
+            var xpsDoc = new XpsDocument(package, CompressionOption.Normal, packUri.AbsoluteUri);
             var docSeq = xpsDoc.GetFixedDocumentSequence();
             if (docSeq == null) return result;
 
@@ -78,9 +101,16 @@ public class XpsDocumentService
                 result.Add(pageItem);
             }
         }
-        finally
+        catch
         {
-            PackageStore.RemovePackage(uri);
+            lock (_lock)
+            {
+                _activePackages.Remove((packUri, package, memoryStream));
+            }
+            try { PackageStore.RemovePackage(packUri); } catch { }
+            try { package.Close(); } catch { }
+            try { memoryStream.Dispose(); } catch { }
+            throw;
         }
 
         return result;
@@ -366,7 +396,7 @@ public class XpsDocumentService
 
             foreach (var slot in sheet.Slots)
             {
-                if (slot.Page?.PageVisual == null)
+                if (slot.Page == null || (slot.Page.PageVisual == null && slot.Page.PreviewImage == null))
                 {
                     if (slot.HasBorder)
                     {
@@ -411,17 +441,32 @@ public class XpsDocumentService
                 double effH = isRotated90 ? pW : pH;
                 double scale = Math.Min(slot.Bounds.Width / effW, slot.Bounds.Height / effH);
 
+                Brush pageBrush;
+                if (slot.Page.PageVisual != null)
+                {
+                    pageBrush = new VisualBrush(slot.Page.PageVisual)
+                    {
+                        Stretch = Stretch.Uniform,
+                        Viewbox = new Rect(0, 0, pW, pH),
+                        ViewboxUnits = BrushMappingMode.Absolute
+                    };
+                }
+                else
+                {
+                    pageBrush = new ImageBrush(slot.Page.PreviewImage)
+                    {
+                        Stretch = Stretch.Uniform,
+                        Viewbox = new Rect(0, 0, pW, pH),
+                        ViewboxUnits = BrushMappingMode.Absolute
+                    };
+                }
+
                 var visualHost = new Canvas
                 {
                     Width = pW,
                     Height = pH,
                     RenderTransformOrigin = new Point(0.5, 0.5),
-                    Background = new VisualBrush(slot.Page.PageVisual)
-                    {
-                        Stretch = Stretch.Uniform,
-                        Viewbox = new Rect(0, 0, pW, pH),
-                        ViewboxUnits = BrushMappingMode.Absolute
-                    }
+                    Background = pageBrush
                 };
 
                 var transformGroup = new TransformGroup();
@@ -518,7 +563,7 @@ public class XpsDocumentService
         return false;
     }
 
-    private static byte[] EnsureMsXpsCompatibility(byte[] bytes)
+    public static byte[] EnsureMsXpsCompatibility(byte[] bytes)
     {
         try
         {
