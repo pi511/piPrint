@@ -28,6 +28,13 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
+# Keep dist\PiPrint\app in sync
+$distAppDir = Join-Path $root "dist\PiPrint\app"
+if (-not (Test-Path $distAppDir)) {
+    New-Item -ItemType Directory -Path $distAppDir -Force | Out-Null
+}
+Copy-Item "$appDir\*" $distAppDir -Recurse -Force -ErrorAction SilentlyContinue
+
 # 2. Locate or Install Inno Setup Compiler (iscc.exe)
 Write-Host "`n[2/4] Detecting Inno Setup compiler (iscc.exe)..." -ForegroundColor Yellow
 $potentialIsccPaths = @(
