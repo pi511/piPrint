@@ -3,7 +3,7 @@
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64)-blue.svg)](https://github.com/pi511/piPrint)
 [![.NET 8.0](https://img.shields.io/badge/.NET-8.0%20WPF-512BD4.svg)](https://dotnet.microsoft.com/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Tests: Passing](https://img.shields.io/badge/Tests-7%20Passing-brightgreen.svg)](PiPrint.Tests)
+[![Tests: Passing](https://img.shields.io/badge/Tests-10%20Passing-brightgreen.svg)](PiPrint.Tests)
 [![Built with AI](https://img.shields.io/badge/Built%20with-AI%20Assistance-blueviolet.svg)](#-ai-development-notice)
 
 A modern, lightweight, high-performance Windows print preview and page organizer utility (an open-source alternative to **FinePrint**) built on **.NET 8 (WPF)**.
@@ -15,7 +15,7 @@ PiPrint seamlessly intercepts print jobs from **any** Windows application, allow
 ## ✨ Key Features
 
 ### 🖨️ Universal Print Interception
-- **Zero Kernel Drivers:** Installs as a native Windows printer device named **"PiPrint"** using the standard, WHQL-signed `Microsoft XPS Document Writer v4` driver.
+- **Zero Kernel Drivers:** Installs as a native Windows printer device named **"PiPrint"** using the standard, WHQL-signed `Microsoft XPS Document Writer v4` driver (with automated Windows 11 optional feature provisioning).
 - **Works with Every Program:** Notepad, Google Chrome, Mozilla Firefox, Microsoft Edge, Word, Excel, Adobe Acrobat, AutoCAD, and any application with a print dialog.
 - **Background Tray Listener:** Runs quietly in the system tray. The moment you print from any application, PiPrint instantly appears with your document loaded.
 - **Multi-Job Merging:** Keep PiPrint open and print from different applications sequentially; incoming jobs automatically append into a single combined session.
