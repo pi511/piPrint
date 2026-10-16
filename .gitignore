@@ -48,6 +48,8 @@ _is_tmp/
 PiPrintSetup.exe
 Setup.cmd
 Install.ps1
+Uninstall.cmd
+Uninstall.ps1
 
 ## Test Renders & Generated Screenshots
 *.png
