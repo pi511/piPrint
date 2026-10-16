@@ -45,6 +45,9 @@ dist/
 ## Inno Setup & Packaging Outputs
 Output/
 _is_tmp/
+PiPrintSetup.exe
+Setup.cmd
+Install.ps1
 
 ## Test Renders & Generated Screenshots
 *.png

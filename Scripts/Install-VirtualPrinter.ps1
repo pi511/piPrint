@@ -62,27 +62,46 @@ if (-not $existingPort) {
 }
 
 # 4. Determine XPS Driver
-$driverName = "Microsoft XPS Document Writer v4"
+$driverName = ""
 $installedDrivers = Get-PrinterDriver | Select-Object -ExpandProperty Name
 
-if ($installedDrivers -notcontains $driverName) {
-    if ($installedDrivers -contains "Microsoft XPS Document Writer") {
+if ($installedDrivers -contains "Microsoft XPS Document Writer v4") {
+    $driverName = "Microsoft XPS Document Writer v4"
+} elseif ($installedDrivers -contains "Microsoft XPS Document Writer") {
+    $driverName = "Microsoft XPS Document Writer"
+} else {
+    Write-Host "[*] XPS driver not found. Attempting to install Windows XPS feature..." -ForegroundColor Yellow
+    try {
+        Start-Process -FilePath "dism.exe" -ArgumentList "/Online", "/NoRestart", "/Enable-Feature", "/FeatureName:Printing-XPSServices-Features", "/All" -Wait -WindowStyle Hidden -ErrorAction SilentlyContinue
+    } catch {}
+
+    try {
+        Start-Process -FilePath "rundll32.exe" -ArgumentList "printui.dll,PrintUIEntry", "/ia", "/m", "`"Microsoft XPS Document Writer v4`"", "/f", "`"$env:windir\inf\ntprint.inf`"" -Wait -WindowStyle Hidden -ErrorAction SilentlyContinue
+    } catch {}
+
+    $installedDrivers = Get-PrinterDriver | Select-Object -ExpandProperty Name
+    if ($installedDrivers -contains "Microsoft XPS Document Writer v4") {
+        $driverName = "Microsoft XPS Document Writer v4"
+    } elseif ($installedDrivers -contains "Microsoft XPS Document Writer") {
         $driverName = "Microsoft XPS Document Writer"
-    } else {
-        Write-Error "Microsoft XPS Document Writer driver not found on this machine."
-        exit 1
     }
 }
-Write-Host "[+] Using driver: $driverName" -ForegroundColor Green
 
-# 5. Create or Update the Virtual Printer Device
-$existingPrinter = Get-Printer -Name $PrinterName -ErrorAction SilentlyContinue
-if ($existingPrinter) {
-    Write-Host "[*] Printer '$PrinterName' already exists. Updating port..." -ForegroundColor Yellow
-    Set-Printer -Name $PrinterName -PortName $portName
+if (-not [string]::IsNullOrEmpty($driverName)) {
+    Write-Host "[+] Using driver: $driverName" -ForegroundColor Green
+
+    # 5. Create or Update the Virtual Printer Device
+    $existingPrinter = Get-Printer -Name $PrinterName -ErrorAction SilentlyContinue
+    if ($existingPrinter) {
+        Write-Host "[*] Printer '$PrinterName' already exists. Updating port..." -ForegroundColor Yellow
+        Set-Printer -Name $PrinterName -PortName $portName
+    } else {
+        Write-Host "[+] Creating printer device: '$PrinterName'..." -ForegroundColor Green
+        Add-Printer -Name $PrinterName -DriverName $driverName -PortName $portName
+    }
 } else {
-    Write-Host "[+] Creating printer device: '$PrinterName'..." -ForegroundColor Green
-    Add-Printer -Name $PrinterName -DriverName $driverName -PortName $portName
+    Write-Warning "Microsoft XPS Document Writer driver is not currently installed on this Windows 11 edition."
+    Write-Host "Tip: You can enable the XPS feature anytime in Windows Settings -> Optional Features." -ForegroundColor Yellow
 }
 
 # 6. Setup Windows Startup & Shortcut if App path is known
