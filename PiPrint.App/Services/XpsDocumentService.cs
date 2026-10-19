@@ -64,16 +64,18 @@ public class XpsDocumentService
 
         var packageUri = new Uri("http://piprint/" + Guid.NewGuid().ToString("N") + ".xps");
         var packUri = PackUriHelper.Create(packageUri);
+        PackageStore.AddPackage(packageUri, package);
         PackageStore.AddPackage(packUri, package);
 
         lock (_lock)
         {
             _activePackages.Add((packUri, package, memoryStream));
+            _activePackages.Add((packageUri, package, memoryStream));
         }
 
         try
         {
-            var xpsDoc = new XpsDocument(package, CompressionOption.Normal, packUri.AbsoluteUri);
+            var xpsDoc = new XpsDocument(package, CompressionOption.Normal, packageUri.AbsoluteUri);
             var docSeq = xpsDoc.GetFixedDocumentSequence();
             if (docSeq == null) return result;
 
@@ -106,7 +108,9 @@ public class XpsDocumentService
             lock (_lock)
             {
                 _activePackages.Remove((packUri, package, memoryStream));
+                _activePackages.Remove((packageUri, package, memoryStream));
             }
+            try { PackageStore.RemovePackage(packageUri); } catch { }
             try { PackageStore.RemovePackage(packUri); } catch { }
             try { package.Close(); } catch { }
             try { memoryStream.Dispose(); } catch { }
@@ -571,16 +575,47 @@ public class XpsDocumentService
             const string msxpsNs = "http://schemas.microsoft.com/xps/2005/06";
 
             using var inMs = new MemoryStream(bytes);
-            using var outMs = new MemoryStream();
+            using var inZip = new System.IO.Compression.ZipArchive(inMs, System.IO.Compression.ZipArchiveMode.Read);
 
-            using (var inZip = new System.IO.Compression.ZipArchive(inMs, System.IO.Compression.ZipArchiveMode.Read))
+            // First check if this archive is OpenXPS
+            bool isOxps = false;
+            foreach (var entry in inZip.Entries)
+            {
+                if (entry.FullName.EndsWith(".fpage", StringComparison.OrdinalIgnoreCase) ||
+                    entry.FullName.EndsWith(".fdseq", StringComparison.OrdinalIgnoreCase) ||
+                    entry.FullName.EndsWith(".fdoc", StringComparison.OrdinalIgnoreCase) ||
+                    entry.FullName.EndsWith(".rels", StringComparison.OrdinalIgnoreCase) ||
+                    entry.FullName.EndsWith("[Content_Types].xml", StringComparison.OrdinalIgnoreCase))
+                {
+                    using var s = entry.Open();
+                    using var r = new StreamReader(s, System.Text.Encoding.UTF8);
+                    string text = r.ReadToEnd();
+                    if (text.Contains("openxps.org", StringComparison.OrdinalIgnoreCase) ||
+                        text.Contains("oxps", StringComparison.OrdinalIgnoreCase))
+                    {
+                        isOxps = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!isOxps)
+            {
+                return bytes;
+            }
+
+            using var outMs = new MemoryStream();
             using (var outZip = new System.IO.Compression.ZipArchive(outMs, System.IO.Compression.ZipArchiveMode.Create, true))
             {
-                bool isOxps = false;
-
                 foreach (var entry in inZip.Entries)
                 {
-                    var newEntry = outZip.CreateEntry(entry.FullName, entry.CompressedLength > 0 ? System.IO.Compression.CompressionLevel.Optimal : System.IO.Compression.CompressionLevel.NoCompression);
+                    string targetFullName = entry.FullName;
+                    if (targetFullName.EndsWith(".odttf", StringComparison.OrdinalIgnoreCase))
+                    {
+                        targetFullName = targetFullName.Substring(0, targetFullName.Length - 6) + ".ttf";
+                    }
+
+                    var newEntry = outZip.CreateEntry(targetFullName, entry.CompressedLength > 0 ? System.IO.Compression.CompressionLevel.Optimal : System.IO.Compression.CompressionLevel.NoCompression);
                     using var inStream = entry.Open();
                     using var outStream = newEntry.Open();
 
@@ -594,23 +629,40 @@ public class XpsDocumentService
                     {
                         using var reader = new StreamReader(inStream, System.Text.Encoding.UTF8);
                         string content = reader.ReadToEnd();
-                        if (content.Contains(oxpsNs))
-                        {
-                            isOxps = true;
-                            content = content.Replace(oxpsNs, msxpsNs);
-                        }
+
+                        content = content.Replace(oxpsNs, msxpsNs);
+                        content = content.Replace(".odttf", ".ttf");
+                        content = content.Replace(".ODTTF", ".ttf");
+                        content = content.Replace("application/vnd.ms-package.obfuscated-opentype", "application/vnd.ms-opentype");
+                        content = content.Replace("application/oxps.obfuscated-opentype", "application/vnd.ms-opentype");
+                        content = content.Replace("application/oxps-obfuscated-opentype", "application/vnd.ms-opentype");
+                        content = content.Replace("Extension=\"odttf\"", "Extension=\"ttf\"");
+                        content = content.Replace("Extension=\"ODTTF\"", "Extension=\"ttf\"");
+
+                        content = content.Replace("application/oxps.fixeddocumentsequence+xml", "application/vnd.ms-package.xps-fixeddocumentsequence+xml");
+                        content = content.Replace("application/oxps.fixeddocument+xml", "application/vnd.ms-package.xps-fixeddocument+xml");
+                        content = content.Replace("application/oxps.fixedpage+xml", "application/vnd.ms-package.xps-fixedpage+xml");
+                        content = content.Replace("application/oxps-fixeddocumentsequence+xml", "application/vnd.ms-package.xps-fixeddocumentsequence+xml");
+                        content = content.Replace("application/oxps-fixeddocument+xml", "application/vnd.ms-package.xps-fixeddocument+xml");
+                        content = content.Replace("application/oxps-fixedpage+xml", "application/vnd.ms-package.xps-fixedpage+xml");
+
                         using var writer = new StreamWriter(outStream, System.Text.Encoding.UTF8);
                         writer.Write(content);
+                    }
+                    else if (entry.FullName.EndsWith(".odttf", StringComparison.OrdinalIgnoreCase))
+                    {
+                        using var fontMs = new MemoryStream();
+                        inStream.CopyTo(fontMs);
+                        byte[] fontBytes = fontMs.ToArray();
+
+                        DeobfuscateOxpsFont(fontBytes, entry.Name);
+
+                        outStream.Write(fontBytes, 0, fontBytes.Length);
                     }
                     else
                     {
                         inStream.CopyTo(outStream);
                     }
-                }
-
-                if (!isOxps)
-                {
-                    return bytes;
                 }
             }
 
@@ -620,6 +672,28 @@ public class XpsDocumentService
         catch
         {
             return bytes;
+        }
+    }
+
+    private static void DeobfuscateOxpsFont(byte[] fontData, string fileName)
+    {
+        if (fontData == null || fontData.Length < 32) return;
+
+        string baseName = System.IO.Path.GetFileNameWithoutExtension(fileName).Trim('{', '}');
+        string hex = baseName.Replace("-", "");
+        if (hex.Length != 32) return;
+
+        byte[] oxKey = new byte[16];
+        for (int i = 0; i < 16; i++)
+        {
+            oxKey[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
+        }
+        Array.Reverse(oxKey);
+
+        // Deobfuscate OpenXPS font (ECMA-388 §6.2.7.3) back to standard raw OpenType font
+        for (int i = 0; i < 32; i++)
+        {
+            fontData[i] ^= oxKey[i % 16];
         }
     }
 }

@@ -18,11 +18,10 @@ public class ImpositionEngineTests
     }
 
     [Fact]
-    public void TestLoadArchivedFile()
+    public void TestLoadAllArchivedFiles()
     {
         var archiveDir = @"C:\ProgramData\PiPrint\Spool\Archive";
         if (!System.IO.Directory.Exists(archiveDir)) return;
-
         var files = System.IO.Directory.GetFiles(archiveDir, "*.xps");
         if (files.Length == 0) return;
 
@@ -32,18 +31,15 @@ public class ImpositionEngineTests
             try
             {
                 var service = new XpsDocumentService();
-                var lastFile = files[^1];
-                var pages = service.LoadFromXpsFile(lastFile);
-                Assert.NotEmpty(pages);
-
-                var highResBmp = pages[0].PreviewImage;
-                Assert.NotNull(highResBmp);
-
-                var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
-                encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create((System.Windows.Media.Imaging.BitmapSource)highResBmp));
-                using var stream = new System.IO.MemoryStream();
-                encoder.Save(stream);
-                Assert.True(stream.Length > 0);
+                foreach (var file in files)
+                {
+                    Console.WriteLine($"Testing file: {file}");
+                    var pages = service.LoadFromXpsFile(file);
+                    Console.WriteLine($"Loaded {pages.Count} pages from {file}");
+                    Assert.NotEmpty(pages);
+                    Assert.NotNull(pages[0].Thumbnail);
+                    Assert.NotNull(pages[0].PreviewImage);
+                }
             }
             catch (Exception ex)
             {

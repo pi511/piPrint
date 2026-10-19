@@ -415,6 +415,22 @@ public class MainViewModel : INotifyPropertyChanged
             catch (Exception ex)
             {
                 StatusMessage = $"Error loading intercepted job: {ex.Message}";
+                try
+                {
+                    string errPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "PiPrint", "error.log");
+                    System.IO.File.AppendAllText(errPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Error loading intercepted job '{jobName}': {ex}\n\n");
+                }
+                catch { }
+
+                if (Application.Current.MainWindow != null)
+                {
+                    Application.Current.MainWindow.Show();
+                    if (Application.Current.MainWindow.WindowState == WindowState.Minimized)
+                    {
+                        Application.Current.MainWindow.WindowState = WindowState.Normal;
+                    }
+                    Application.Current.MainWindow.Activate();
+                }
             }
         });
     }
