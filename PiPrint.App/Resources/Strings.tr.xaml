@@ -19,6 +19,13 @@
     <sys:String x:Key="Str_RemoveBlanks">🧹 Boş Sayfaları Sil</sys:String>
     <sys:String x:Key="Str_Rotate90">↻ 90° Döndür</sys:String>
     <sys:String x:Key="Str_DeletePage">❌ Sayfayı Sil</sys:String>
+    <sys:String x:Key="Str_CropPage">✂️ Sayfayı Kırp</sys:String>
+    <sys:String x:Key="Str_CropApply">✓ Kırpmayı Uygula</sys:String>
+    <sys:String x:Key="Str_CropApplyAll">📋 Tümüne Uygula</sys:String>
+    <sys:String x:Key="Str_CropReset">↺ Orijinale Sıfırla</sys:String>
+    <sys:String x:Key="Str_CropCancel">✕ İptal</sys:String>
+    <sys:String x:Key="Str_CropCropped">KIRPILDI</sys:String>
+    <sys:String x:Key="Str_CropAutoDetect">✨ Boş Kenarları Kırp (Beni Şaşırt!)</sys:String>
 
     <!-- Left Gallery -->
     <sys:String x:Key="Str_PageOrganizer">Sayfa Düzenleyici</sys:String>

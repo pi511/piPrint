@@ -26,6 +26,7 @@
         <KeyBinding Modifiers="Control" Key="Subtract" Command="{Binding ZoomOutCommand}"/>
         <KeyBinding Modifiers="Control" Key="D0" Command="{Binding ZoomFitCommand}"/>
         <KeyBinding Modifiers="Control" Key="NumPad0" Command="{Binding ZoomFitCommand}"/>
+        <KeyBinding Modifiers="Control" Key="K" Command="{Binding OpenCropCommand}"/>
     </Window.InputBindings>
 
     <Grid>
@@ -117,6 +118,9 @@
 
                 <!-- Page Operations -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Command="{Binding OpenCropCommand}" Content="{DynamicResource Str_CropPage}" 
+                            ToolTip="Crop margins or custom region (Ctrl+K)"
+                            Background="#EFF6FF" Foreground="#1D4ED8" BorderBrush="#BFDBFE" Padding="10,5" Margin="4,0" Cursor="Hand" FontWeight="SemiBold"/>
                     <Button Command="{Binding DeleteBlankPagesCommand}" Content="{DynamicResource Str_RemoveBlanks}" 
                             Background="#F1F5F9" Foreground="#334155" BorderBrush="#CBD5E1" Padding="10,5" Margin="4,0" Cursor="Hand"/>
                     <Button Command="{Binding RotateCWCommand}" Content="{DynamicResource Str_Rotate90}" 
@@ -171,6 +175,17 @@
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                 <Setter Property="AllowDrop" Value="True"/>
                                 <Setter Property="Cursor" Value="Hand"/>
+                                <Setter Property="ContextMenu">
+                                    <Setter.Value>
+                                        <ContextMenu>
+                                            <MenuItem Header="{DynamicResource Str_CropPage}" Command="{Binding DataContext.OpenCropCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                            <MenuItem Header="{DynamicResource Str_CropReset}" Command="{Binding DataContext.ResetCropCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                            <Separator/>
+                                            <MenuItem Header="{DynamicResource Str_Rotate90}" Command="{Binding DataContext.RotateCWCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                            <MenuItem Header="{DynamicResource Str_DeletePage}" Command="{Binding DataContext.DeleteSelectedPageCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                        </ContextMenu>
+                                    </Setter.Value>
+                                </Setter>
                             </Style>
                         </ListBox.ItemContainerStyle>
                         <ListBox.ItemTemplate>
@@ -194,6 +209,10 @@
                                                 <Border Background="#F97316" Visibility="{Binding IsBlank, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                         VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="2,1">
                                                     <TextBlock Text="{DynamicResource Str_BlankBadge}" Foreground="White" FontSize="8" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                                </Border>
+                                                <Border Background="#10B981" Visibility="{Binding IsCropped, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                        VerticalAlignment="Top" HorizontalAlignment="Right" CornerRadius="2" Margin="2" Padding="3,1">
+                                                    <TextBlock Text="{DynamicResource Str_CropCropped}" Foreground="White" FontSize="7" FontWeight="Bold"/>
                                                 </Border>
                                             </Grid>
                                         </Border>
@@ -302,6 +321,10 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
+
+                <!-- Case C: Interactive Page Cropper Overlay -->
+                <views:PageCropperControl Visibility="{Binding IsCropping, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                          DataContext="{Binding}"/>
             </Grid>
 
             <!-- Column 3: Right Print Settings & Output -->

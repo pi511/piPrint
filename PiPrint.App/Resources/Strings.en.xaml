@@ -19,6 +19,13 @@
     <sys:String x:Key="Str_RemoveBlanks">🧹 Remove Blank Pages</sys:String>
     <sys:String x:Key="Str_Rotate90">↻ Rotate 90°</sys:String>
     <sys:String x:Key="Str_DeletePage">❌ Delete Page</sys:String>
+    <sys:String x:Key="Str_CropPage">✂️ Crop Page</sys:String>
+    <sys:String x:Key="Str_CropApply">✓ Apply Crop</sys:String>
+    <sys:String x:Key="Str_CropApplyAll">📋 Apply to All</sys:String>
+    <sys:String x:Key="Str_CropReset">↺ Reset Original</sys:String>
+    <sys:String x:Key="Str_CropCancel">✕ Cancel</sys:String>
+    <sys:String x:Key="Str_CropCropped">CROPPED</sys:String>
+    <sys:String x:Key="Str_CropAutoDetect">✨ Auto-Trim Margins (Surprise Me!)</sys:String>
 
     <!-- Left Gallery -->
     <sys:String x:Key="Str_PageOrganizer">Page Organizer</sys:String>

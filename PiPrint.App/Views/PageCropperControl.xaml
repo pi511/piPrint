@@ -1,0 +1,157 @@
+<UserControl x:Class="PiPrint.App.Views.PageCropperControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="750" d:DesignWidth="900"
+             Focusable="True"
+             KeyDown="UserControl_KeyDown">
+    <Grid Background="#E80F172A">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Floating Controls Toolbar -->
+        <Border Grid.Row="0" Background="#1E293B" BorderBrush="#334155" BorderThickness="0,0,0,1" Padding="16,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Page Info -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="✂️" FontSize="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="TitleText" Text="Crop Page" Foreground="White" FontWeight="Bold" FontSize="14"/>
+                        <TextBlock x:Name="SubtitleText" Text="Drag a rectangle to crop margins" Foreground="#94A3B8" FontSize="11"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Preset & Auto-Trim Tools (Surprise Me!) -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <!-- Surprise Me: Auto-Trim Margins -->
+                    <Button Click="BtnAutoTrim_Click"
+                            ToolTip="Smart Content Edge Detection - Trims all unused outer margins automatically!"
+                            Background="#D97706" Foreground="White" BorderThickness="0"
+                            Padding="12,6" Margin="4,0" Cursor="Hand" FontWeight="Bold">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="✨" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Auto-Trim Margins (Surprise Me!)" FontWeight="Bold"/>
+                                    </StackPanel>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <Border Width="1" Height="20" Background="#334155" Margin="8,0"/>
+
+                    <!-- Presets -->
+                    <Button Click="BtnPreset5_Click" Content="Trim 5%" ToolTip="Trim 5% from all edges"
+                            Background="#334155" Foreground="#E2E8F0" BorderThickness="0" Padding="10,6" Margin="2,0" Cursor="Hand"/>
+                    <Button Click="BtnPresetSquare_Click" Content="1:1 Square" ToolTip="Crop to center 1:1 square"
+                            Background="#334155" Foreground="#E2E8F0" BorderThickness="0" Padding="10,6" Margin="2,0" Cursor="Hand"/>
+                    <Button Click="BtnPresetWide_Click" Content="16:9 Wide" ToolTip="Crop to 16:9 presentation aspect"
+                            Background="#334155" Foreground="#E2E8F0" BorderThickness="0" Padding="10,6" Margin="2,0" Cursor="Hand"/>
+                    <Button Click="BtnPresetTop_Click" Content="Top Half" ToolTip="Crop to top half of page"
+                            Background="#334155" Foreground="#E2E8F0" BorderThickness="0" Padding="10,6" Margin="2,0" Cursor="Hand"/>
+                    <Button Click="BtnPresetBottom_Click" Content="Bottom Half" ToolTip="Crop to bottom half of page"
+                            Background="#334155" Foreground="#E2E8F0" BorderThickness="0" Padding="10,6" Margin="2,0" Cursor="Hand"/>
+                    <Button Click="BtnPresetFull_Click" Content="Reset Box" ToolTip="Expand crop rectangle to full page"
+                            Background="#334155" Foreground="#E2E8F0" BorderThickness="0" Padding="10,6" Margin="2,0" Cursor="Hand"/>
+                </StackPanel>
+
+                <!-- Actions: Apply, Apply to All, Cancel -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="BtnResetOriginal" Click="BtnResetOriginal_Click" Content="↺ Reset Original"
+                            ToolTip="Remove any existing crop and restore original page dimensions"
+                            Background="#475569" Foreground="#FCA5A5" BorderThickness="0" Padding="10,6" Margin="4,0" Cursor="Hand"/>
+
+                    <Button Click="BtnApplyCrop_Click" Content="✓ Apply Crop"
+                            ToolTip="Apply crop to currently viewed page (Enter)"
+                            Background="#10B981" Foreground="White" BorderThickness="0" Padding="14,6" Margin="4,0" Cursor="Hand" FontWeight="Bold"/>
+
+                    <Button Click="BtnApplyAll_Click" Content="📋 Apply to All"
+                            ToolTip="Apply this exact crop proportion to all pages in the document"
+                            Background="#2563EB" Foreground="White" BorderThickness="0" Padding="12,6" Margin="4,0" Cursor="Hand" FontWeight="SemiBold"/>
+
+                    <Button Click="BtnCancel_Click" Content="✕ Cancel"
+                            ToolTip="Cancel cropping without saving changes (Esc)"
+                            Background="#334155" Foreground="#CBD5E1" BorderThickness="0" Padding="12,6" Margin="4,0" Cursor="Hand"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Center Interactive Cropping View -->
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Grid x:Name="CanvasContainer" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="30"
+                  SizeChanged="CanvasContainer_SizeChanged">
+                <Border CornerRadius="4" BorderBrush="#475569" BorderThickness="1" Background="White">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="30" ShadowDepth="8" Direction="270" Color="Black" Opacity="0.5"/>
+                    </Border.Effect>
+
+                    <Canvas x:Name="CropperCanvas"
+                            ClipToBounds="True"
+                            Background="White"
+                            MouseDown="CropperCanvas_MouseDown"
+                            MouseMove="CropperCanvas_MouseMove"
+                            MouseUp="CropperCanvas_MouseUp">
+
+                        <!-- Page Image Display -->
+                        <Image x:Name="PageImage" Stretch="Fill" IsHitTestVisible="False"/>
+
+                        <!-- 4 Dark Mask Overlays for Area Outside Selection -->
+                        <Rectangle x:Name="MaskTop" Fill="#AA0F172A" IsHitTestVisible="False"/>
+                        <Rectangle x:Name="MaskBottom" Fill="#AA0F172A" IsHitTestVisible="False"/>
+                        <Rectangle x:Name="MaskLeft" Fill="#AA0F172A" IsHitTestVisible="False"/>
+                        <Rectangle x:Name="MaskRight" Fill="#AA0F172A" IsHitTestVisible="False"/>
+
+                        <!-- Rule-of-Thirds Grid Lines (Subtle) -->
+                        <Line x:Name="GridLineV1" Stroke="#44FFFFFF" StrokeThickness="1" StrokeDashArray="2 2" IsHitTestVisible="False"/>
+                        <Line x:Name="GridLineV2" Stroke="#44FFFFFF" StrokeThickness="1" StrokeDashArray="2 2" IsHitTestVisible="False"/>
+                        <Line x:Name="GridLineH1" Stroke="#44FFFFFF" StrokeThickness="1" StrokeDashArray="2 2" IsHitTestVisible="False"/>
+                        <Line x:Name="GridLineH2" Stroke="#44FFFFFF" StrokeThickness="1" StrokeDashArray="2 2" IsHitTestVisible="False"/>
+
+                        <!-- Crop Selection Rectangle Box -->
+                        <Rectangle x:Name="SelectionBox"
+                                   Stroke="#3B82F6"
+                                   StrokeThickness="2"
+                                   StrokeDashArray="4 2"
+                                   Fill="#01000000"
+                                   Cursor="SizeAll"/>
+
+                        <!-- 8 Resizing Handles -->
+                        <Border x:Name="HandleNW" Width="12" Height="12" Background="White" BorderBrush="#2563EB" BorderThickness="2" CornerRadius="2" Cursor="SizeNWSE"/>
+                        <Border x:Name="HandleN"  Width="12" Height="12" Background="White" BorderBrush="#2563EB" BorderThickness="2" CornerRadius="2" Cursor="SizeNS"/>
+                        <Border x:Name="HandleNE" Width="12" Height="12" Background="White" BorderBrush="#2563EB" BorderThickness="2" CornerRadius="2" Cursor="SizeNESW"/>
+                        <Border x:Name="HandleE"  Width="12" Height="12" Background="White" BorderBrush="#2563EB" BorderThickness="2" CornerRadius="2" Cursor="SizeWE"/>
+                        <Border x:Name="HandleSE" Width="12" Height="12" Background="White" BorderBrush="#2563EB" BorderThickness="2" CornerRadius="2" Cursor="SizeNWSE"/>
+                        <Border x:Name="HandleS"  Width="12" Height="12" Background="White" BorderBrush="#2563EB" BorderThickness="2" CornerRadius="2" Cursor="SizeNS"/>
+                        <Border x:Name="HandleSW" Width="12" Height="12" Background="White" BorderBrush="#2563EB" BorderThickness="2" CornerRadius="2" Cursor="SizeNESW"/>
+                        <Border x:Name="HandleW"  Width="12" Height="12" Background="White" BorderBrush="#2563EB" BorderThickness="2" CornerRadius="2" Cursor="SizeWE"/>
+
+                        <!-- Floating Live Dimension Tag -->
+                        <Border x:Name="DimensionTag" Background="#E60F172A" BorderBrush="#3B82F6" BorderThickness="1"
+                                CornerRadius="4" Padding="6,2" IsHitTestVisible="False">
+                            <TextBlock x:Name="DimensionText" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                        </Border>
+                    </Canvas>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+
+        <!-- Bottom Status Bar -->
+        <Border Grid.Row="2" Background="#1E293B" BorderBrush="#334155" BorderThickness="0,1,0,0" Padding="16,6">
+            <TextBlock x:Name="StatusBarText" Text="Tip: Click and drag anywhere on the page to draw a new crop box, or drag the corner handles to resize."
+                       Foreground="#94A3B8" FontSize="12" HorizontalAlignment="Center"/>
+        </Border>
+    </Grid>
+</UserControl>

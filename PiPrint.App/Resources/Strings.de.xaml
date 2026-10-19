@@ -19,6 +19,13 @@
     <sys:String x:Key="Str_RemoveBlanks">🧹 Leere Seiten löschen</sys:String>
     <sys:String x:Key="Str_Rotate90">↻ 90° drehen</sys:String>
     <sys:String x:Key="Str_DeletePage">❌ Seite löschen</sys:String>
+    <sys:String x:Key="Str_CropPage">✂️ Seite zuschneiden</sys:String>
+    <sys:String x:Key="Str_CropApply">✓ Zuschnitt anwenden</sys:String>
+    <sys:String x:Key="Str_CropApplyAll">📋 Auf alle anwenden</sys:String>
+    <sys:String x:Key="Str_CropReset">↺ Original wiederherstellen</sys:String>
+    <sys:String x:Key="Str_CropCancel">✕ Abbrechen</sys:String>
+    <sys:String x:Key="Str_CropCropped">ZUGETSCHNITTEN</sys:String>
+    <sys:String x:Key="Str_CropAutoDetect">✨ Ränder automatisch beschneiden</sys:String>
 
     <!-- Left Gallery -->
     <sys:String x:Key="Str_PageOrganizer">Seitenorganisator</sys:String>

@@ -210,6 +210,20 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    private bool _isCropping;
+    public bool IsCropping
+    {
+        get => _isCropping;
+        set => SetField(ref _isCropping, value);
+    }
+
+    private PageItem? _croppingPage;
+    public PageItem? CroppingPage
+    {
+        get => _croppingPage;
+        set => SetField(ref _croppingPage, value);
+    }
+
     // Commands
     public ICommand DeleteSelectedPageCommand { get; }
     public ICommand DeleteBlankPagesCommand { get; }
@@ -229,9 +243,19 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand ZoomInCommand { get; }
     public ICommand ZoomOutCommand { get; }
     public ICommand ZoomFitCommand { get; }
+    public ICommand OpenCropCommand { get; }
+    public ICommand ApplyCropCommand { get; }
+    public ICommand ApplyCropToAllCommand { get; }
+    public ICommand ResetCropCommand { get; }
+    public ICommand CancelCropCommand { get; }
 
     public MainViewModel()
     {
+        OpenCropCommand = new RelayCommand(OpenCrop, () => HasPages);
+        ApplyCropCommand = new RelayCommand(param => { if (param is Rect r) ApplyCrop(r); });
+        ApplyCropToAllCommand = new RelayCommand(param => { if (param is Rect r) ApplyCropToAll(r); });
+        ResetCropCommand = new RelayCommand(ResetCrop);
+        CancelCropCommand = new RelayCommand(() => IsCropping = false);
         DeleteSelectedPageCommand = new RelayCommand(DeleteSelectedPage, () => SelectedPage != null);
         DeleteBlankPagesCommand = new RelayCommand(DeleteBlankPages, () => Pages.Any(p => p.IsBlank));
         RotateCWCommand = new RelayCommand(() => RotateSelected(90), () => SelectedPage != null);
@@ -515,6 +539,70 @@ public class MainViewModel : INotifyPropertyChanged
         RecalculateSheets();
         SelectedPage = Pages[newIndex];
         StatusMessage = LocalizationService.Instance.GetString("Str_PageMoved", newIndex + 1);
+    }
+
+    public void OpenCrop()
+    {
+        if (SelectedPage == null && Pages.Count > 0)
+        {
+            SelectedPage = Pages[0];
+        }
+
+        if (SelectedPage == null) return;
+        CroppingPage = SelectedPage;
+        IsCropping = true;
+        StatusMessage = $"Cropping Page {SelectedPage.DisplayNumber}...";
+    }
+
+    public void ApplyCrop(Rect cropRect)
+    {
+        var targetPage = CroppingPage ?? SelectedPage;
+        if (targetPage == null) return;
+
+        targetPage.ApplyCrop(cropRect);
+        IsCropping = false;
+        CroppingPage = null;
+        RecalculateSheets();
+        StatusMessage = $"Page {targetPage.DisplayNumber} cropped to {targetPage.Width:F0} × {targetPage.Height:F0} pt.";
+    }
+
+    public void ApplyCropToAll(Rect cropRect)
+    {
+        var sourcePage = CroppingPage ?? SelectedPage;
+        if (sourcePage == null || Pages.Count == 0) return;
+
+        double srcW = sourcePage.OriginalWidth > 0 ? sourcePage.OriginalWidth : sourcePage.Width;
+        double srcH = sourcePage.OriginalHeight > 0 ? sourcePage.OriginalHeight : sourcePage.Height;
+
+        double relX = srcW > 0 ? cropRect.X / srcW : 0;
+        double relY = srcH > 0 ? cropRect.Y / srcH : 0;
+        double relW = srcW > 0 ? cropRect.Width / srcW : 1;
+        double relH = srcH > 0 ? cropRect.Height / srcH : 1;
+
+        foreach (var page in Pages)
+        {
+            double pw = page.OriginalWidth > 0 ? page.OriginalWidth : page.Width;
+            double ph = page.OriginalHeight > 0 ? page.OriginalHeight : page.Height;
+            var targetRect = new Rect(relX * pw, relY * ph, relW * pw, relH * ph);
+            page.ApplyCrop(targetRect);
+        }
+
+        IsCropping = false;
+        CroppingPage = null;
+        RecalculateSheets();
+        StatusMessage = $"Crop applied to all {Pages.Count} pages!";
+    }
+
+    public void ResetCrop()
+    {
+        var targetPage = CroppingPage ?? SelectedPage;
+        if (targetPage == null) return;
+
+        targetPage.ResetCrop();
+        IsCropping = false;
+        CroppingPage = null;
+        RecalculateSheets();
+        StatusMessage = $"Crop reset for Page {targetPage.DisplayNumber}.";
     }
 
     public void NextSheet()

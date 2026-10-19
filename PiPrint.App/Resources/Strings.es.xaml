@@ -19,6 +19,13 @@
     <sys:String x:Key="Str_RemoveBlanks">🧹 Quitar páginas en blanco</sys:String>
     <sys:String x:Key="Str_Rotate90">↻ Girar 90°</sys:String>
     <sys:String x:Key="Str_DeletePage">❌ Eliminar página</sys:String>
+    <sys:String x:Key="Str_CropPage">✂️ Recortar página</sys:String>
+    <sys:String x:Key="Str_CropApply">✓ Aplicar recorte</sys:String>
+    <sys:String x:Key="Str_CropApplyAll">📋 Aplicar a todas</sys:String>
+    <sys:String x:Key="Str_CropReset">↺ Restablecer original</sys:String>
+    <sys:String x:Key="Str_CropCancel">✕ Cancelar</sys:String>
+    <sys:String x:Key="Str_CropCropped">RECORTADA</sys:String>
+    <sys:String x:Key="Str_CropAutoDetect">✨ Ajustar bordes automáticamente</sys:String>
 
     <!-- Left Gallery -->
     <sys:String x:Key="Str_PageOrganizer">Organizador de páginas</sys:String>
