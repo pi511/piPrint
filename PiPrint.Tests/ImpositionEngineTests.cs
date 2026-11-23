@@ -351,4 +351,82 @@ public class ImpositionEngineTests
         thread.Start();
         thread.Join();
     }
+
+    [Fact]
+    public void TestPrintTicketContainsCopyCount()
+    {
+        var thread = new Thread(() =>
+        {
+            var service = new XpsDocumentService();
+            var pages = service.GenerateSampleDocument();
+            var engine = new ImpositionEngine();
+            var sheets = engine.ComputeSheets(pages, LayoutMode.OneUp);
+            var doc = service.BuildComposedDocument(sheets);
+
+            var tempXps = System.IO.Path.GetTempFileName() + ".xps";
+            using (var xpsDoc = new System.Windows.Xps.Packaging.XpsDocument(tempXps, System.IO.FileAccess.ReadWrite))
+            {
+                var writer = System.Windows.Xps.Packaging.XpsDocument.CreateXpsDocumentWriter(xpsDoc);
+                var ticket = new System.Printing.PrintTicket();
+                ticket.CopyCount = 4;
+
+                writer.WritingPrintTicketRequired += (s, e) =>
+                {
+                    e.CurrentPrintTicket = ticket;
+                };
+
+                writer.Write(doc.DocumentPaginator, ticket);
+            }
+
+            bool foundJobCopyCount = false;
+            using (var zip = System.IO.Compression.ZipFile.OpenRead(tempXps))
+            {
+                foreach (var entry in zip.Entries)
+                {
+                    if (entry.FullName.Equals("MetaData/Job_PT.xml", StringComparison.OrdinalIgnoreCase))
+                    {
+                        using var reader = new System.IO.StreamReader(entry.Open());
+                        string content = reader.ReadToEnd();
+                        if (content.Contains("JobCopiesAllDocuments") && content.Contains("4"))
+                        {
+                            foundJobCopyCount = true;
+                        }
+                    }
+                }
+            }
+
+            try { System.IO.File.Delete(tempXps); } catch { }
+            Assert.True(foundJobCopyCount, "MetaData/Job_PT.xml should contain JobCopiesAllDocuments = 4");
+        });
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+    }
+
+    [Fact]
+    public void TestCopiesCommands()
+    {
+        var thread = new Thread(() =>
+        {
+            var vm = new PiPrint.App.ViewModels.MainViewModel();
+            Assert.Equal(1, vm.Copies);
+
+            vm.IncrementCopiesCommand.Execute(null);
+            Assert.Equal(2, vm.Copies);
+
+            vm.IncrementCopiesCommand.Execute(null);
+            vm.IncrementCopiesCommand.Execute(null);
+            Assert.Equal(4, vm.Copies);
+
+            vm.DecrementCopiesCommand.Execute(null);
+            Assert.Equal(3, vm.Copies);
+
+            vm.Copies = 1;
+            vm.DecrementCopiesCommand.Execute(null);
+            Assert.Equal(1, vm.Copies); // Minimum 1 copy
+        });
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+    }
 }

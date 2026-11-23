@@ -248,9 +248,13 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand ApplyCropToAllCommand { get; }
     public ICommand ResetCropCommand { get; }
     public ICommand CancelCropCommand { get; }
+    public ICommand IncrementCopiesCommand { get; }
+    public ICommand DecrementCopiesCommand { get; }
 
     public MainViewModel()
     {
+        IncrementCopiesCommand = new RelayCommand(() => Copies++);
+        DecrementCopiesCommand = new RelayCommand(() => Copies = Math.Max(1, Copies - 1));
         OpenCropCommand = new RelayCommand(OpenCrop, () => HasPages);
         ApplyCropCommand = new RelayCommand(param => { if (param is Rect r) ApplyCrop(r); });
         ApplyCropToAllCommand = new RelayCommand(param => { if (param is Rect r) ApplyCropToAll(r); });
@@ -720,8 +724,9 @@ public class MainViewModel : INotifyPropertyChanged
             else
             {
                 _printerManager.PrintDocument(composedDoc, SelectedPrinter.Name, Copies, CurrentDuplexMode);
-                StatusMessage = $"Successfully sent {Sheets.Count} sheet(s) to '{SelectedPrinter.Name}'.";
-                MessageBox.Show($"Print job sent to {SelectedPrinter.Name}!", "Print Succeeded", MessageBoxButton.OK, MessageBoxImage.Information);
+                string copyInfo = Copies > 1 ? $" ({Copies} copies)" : "";
+                StatusMessage = $"Successfully sent {Sheets.Count} sheet(s){copyInfo} to '{SelectedPrinter.Name}'.";
+                MessageBox.Show($"Print job{copyInfo} sent to {SelectedPrinter.Name}!", "Print Succeeded", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
         catch (Exception ex)

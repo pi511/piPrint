@@ -83,22 +83,93 @@ public class PrinterManager
         using var printServer = new LocalPrintServer();
         var queue = printServer.GetPrintQueue(printerName);
 
-        var ticket = queue.UserPrintTicket ?? queue.DefaultPrintTicket;
-        if (ticket != null)
+        int targetCopies = Math.Max(1, copies);
+
+        var baseTicket = queue.UserPrintTicket ?? queue.DefaultPrintTicket;
+        var ticket = baseTicket != null ? baseTicket.Clone() : new PrintTicket();
+
+        ticket.CopyCount = targetCopies;
+        if (targetCopies > 1)
         {
-            ticket.CopyCount = copies;
-            if (duplex == DuplexMode.HardwareDuplex)
-            {
-                ticket.Duplexing = Duplexing.TwoSidedLongEdge;
-            }
-            else
-            {
-                ticket.Duplexing = Duplexing.OneSided;
-            }
+            ticket.Collation = Collation.Collated;
         }
 
-        var xpsWriter = PrintQueue.CreateXpsDocumentWriter(queue);
-        xpsWriter.Write(doc.DocumentPaginator, ticket);
+        if (duplex == DuplexMode.HardwareDuplex)
+        {
+            ticket.Duplexing = Duplexing.TwoSidedLongEdge;
+        }
+        else
+        {
+            ticket.Duplexing = Duplexing.OneSided;
+        }
+
+        PrintTicket validatedTicket = ticket;
+        try
+        {
+            if (baseTicket != null)
+            {
+                var mergeResult = queue.MergeAndValidatePrintTicket(baseTicket, ticket);
+                if (mergeResult.ValidatedPrintTicket != null)
+                {
+                    validatedTicket = mergeResult.ValidatedPrintTicket;
+                    if (validatedTicket.CopyCount != targetCopies && targetCopies > 1)
+                    {
+                        validatedTicket.CopyCount = targetCopies;
+                    }
+                }
+            }
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            doc.PrintTicket = validatedTicket;
+        }
+        catch
+        {
+        }
+
+        bool supportsHardwareCopies = true;
+        try
+        {
+            var caps = queue.GetPrintCapabilities(validatedTicket);
+            if (caps?.MaxCopyCount == null || caps.MaxCopyCount.Value < targetCopies)
+            {
+                supportsHardwareCopies = false;
+            }
+        }
+        catch
+        {
+            // If querying capabilities fails, attempt standard hardware copy count
+        }
+
+        if (supportsHardwareCopies)
+        {
+            var xpsWriter = PrintQueue.CreateXpsDocumentWriter(queue);
+            xpsWriter.WritingPrintTicketRequired += (sender, args) =>
+            {
+                args.CurrentPrintTicket = validatedTicket;
+            };
+            xpsWriter.Write(doc.DocumentPaginator, validatedTicket);
+        }
+        else
+        {
+            // Fallback for software printers (e.g. PDF/XPS) or drivers with MaxCopyCount <= 1:
+            // Send targetCopies individual passes
+            for (int i = 0; i < targetCopies; i++)
+            {
+                var singlePassTicket = validatedTicket.Clone();
+                singlePassTicket.CopyCount = 1;
+                var xpsWriter = PrintQueue.CreateXpsDocumentWriter(queue);
+                xpsWriter.WritingPrintTicketRequired += (sender, args) =>
+                {
+                    args.CurrentPrintTicket = singlePassTicket;
+                };
+                xpsWriter.Write(doc.DocumentPaginator, singlePassTicket);
+            }
+        }
     }
 
     public void SaveAsXps(FixedDocument doc, string filePath)

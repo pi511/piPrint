@@ -369,10 +369,14 @@
                         <Grid Margin="0,0,0,24">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="{DynamicResource Str_Copies}" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="#334155"/>
-                            <TextBox Grid.Column="1" Text="{Binding Copies}" Padding="6,4" TextAlignment="Center"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Command="{Binding DecrementCopiesCommand}" Content="-" Width="28" Height="28" Background="#F1F5F9" BorderBrush="#CBD5E1" Cursor="Hand" FontWeight="Bold"/>
+                                <TextBox Text="{Binding Copies, UpdateSourceTrigger=PropertyChanged}" Width="44" Height="28" VerticalContentAlignment="Center" TextAlignment="Center" Margin="3,0"/>
+                                <Button Command="{Binding IncrementCopiesCommand}" Content="+" Width="28" Height="28" Background="#F1F5F9" BorderBrush="#CBD5E1" Cursor="Hand" FontWeight="Bold"/>
+                            </StackPanel>
                         </Grid>
 
                         <!-- Primary Print Buttons -->
